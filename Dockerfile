@@ -1,23 +1,21 @@
-# Multi-stage build for Spring Boot
+# Multi-stage Spring Boot for Render
 FROM maven:3.9.6-eclipse-temurin-17 AS build
 
 WORKDIR /app
 COPY pom.xml .
 COPY src ./src
 
-# Build JAR (skip tests for faster builds)
+# Build JAR
 RUN mvn clean package -DskipTests
 
-# Production stage
+# Production runtime
 FROM eclipse-temurin:17-jre-alpine
 
 WORKDIR /app
-
-# Copy JAR from build stage
 COPY --from=build /app/target/*.jar app.jar
 
-# Expose port
-EXPOSE ${PORT:8080}
+# Expose 8080 (Render maps to external PORT)
+EXPOSE 8080
 
-# Start app
-ENTRYPOINT ["java", "-jar", "app.jar"]
+# Run with Render's PORT env var
+ENTRYPOINT ["sh", "-c", "java -jar app.jar --server.port=${PORT:-8080}"]
