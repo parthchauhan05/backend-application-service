@@ -67,10 +67,16 @@ public class AuthController {
             if(response.getStatusCode() == HttpStatus.OK) {
                 JsonNode root = objectMapper.readTree(response.getBody());
                 String userId = root.path("user").path("id").asText();
-                String email = root.path("user").path("email").asText(request.email());
+                String email  = root.path("user").path("email").asText(request.email());
+                String name   = root.path("user").path("user_metadata").path("full_name").asText("");
 
                 String token = jwtUtil.generateToken(userId, email);
-                return ResponseEntity.ok(Map.of("token", token, "userId", userId, "email", email));
+                return ResponseEntity.ok(Map.of(
+                        "token",  token,
+                        "userId", userId,
+                        "email",  email,
+                        "name",   name
+                ));
             }
             return ResponseEntity.status(401).body("Invalid credentials");
         } catch (HttpClientErrorException.Unauthorized e) {
@@ -106,10 +112,19 @@ public class AuthController {
             if(response.getStatusCode() == HttpStatus.OK) {
                 JsonNode root = objectMapper.readTree(response.getBody());
                 String userId = root.path("user").path("id").asText();
-                String email = root.path("user").path("email").asText(request.email());
+                String email  = root.path("user").path("email").asText(request.email());
+                // Supabase echoes back the user_metadata we sent; fall back to the
+                // name from the request body in case the node is missing.
+                String name   = root.path("user").path("user_metadata").path("full_name")
+                                    .asText(request.name() != null ? request.name() : "");
 
                 String token = jwtUtil.generateToken(userId, email);
-                return ResponseEntity.ok(Map.of("token", token, "userId", userId, "email", email));
+                return ResponseEntity.ok(Map.of(
+                        "token",  token,
+                        "userId", userId,
+                        "email",  email,
+                        "name",   name
+                ));
             }
             return ResponseEntity.status(response.getStatusCode()).body(response.getBody());
         } catch (HttpClientErrorException e) {
