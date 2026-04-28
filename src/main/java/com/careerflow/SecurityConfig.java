@@ -21,7 +21,7 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.cors(Customizer.withDefaults()).authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/auth/**","/api/docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
-                .requestMatchers("/api/applications/**").authenticated()
+                .requestMatchers("/api/applications/**", "/api/linked-emails/**").authenticated()
                 .anyRequest().authenticated()
         )
         .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
